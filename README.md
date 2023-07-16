@@ -3,7 +3,7 @@
 	<p>An unique event library for Roblox.</p>
     <img src="https://img.shields.io/badge/version-v1.0.0-green">
     <img src="https://img.shields.io/badge/docs-WIP-red">
-    <a href="https://opensource.org/license/mit/"><img src="https://img.shields.io/github/license/lettuce-magician/lethel-lang"></a>
+    <a href="https://opensource.org/license/mit/"><img src="https://img.shields.io/github/license/lettuce-magician/Javelin"></a>
     <a href="https://roblox.com"><img src="https://img.shields.io/badge/Made%20for-Roblox-white?logo=roblox"></a>
 </div>
 
