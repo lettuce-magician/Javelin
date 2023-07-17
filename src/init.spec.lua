@@ -59,6 +59,24 @@ return function ()
         end)
     end)
 
+    describe("Javelin:Emit", function()
+        it("should execute all non-sync events then the synced ones", function()
+            local ranFirst = 0
+            signal:On("emit", function()
+                ranFirst = 1
+            end)
+
+            signal:OnSync("emit", function()
+                task.wait(0.25)
+                if ranFirst ~= 0 then return end
+                ranFirst = 2
+            end)
+
+            signal:Emit("emit")
+            expect(ranFirst).to.be.equal(1)
+        end)
+    end)
+
     describe("Connection:Await", function()
         it("should return arguments passed", function()
             local Conn = signal:On("emit")

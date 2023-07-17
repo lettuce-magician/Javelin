@@ -1,7 +1,8 @@
 ---@class Javelin
 local Javelin:Javelin = {}
 Javelin.__index = Javelin
-Javelin.__diag = {
+
+local __diag = {
     {
         Text = "Attempt to emit event '%s' that has no listeners.",
         Type = "warn",
@@ -16,6 +17,11 @@ Javelin.__diag = {
         Text = "Connection:Await() of event '%s' has been cancelled because of timeout.",
         Type = "warn",
         State = true,
+    },
+    {
+        Text = "Error on a Connection of Event '%s':\n%s",
+        Type = "warn",
+        State = true
     }
 }
 
@@ -23,6 +29,16 @@ local funclist = {
     warn = warn,
     error = error,
 }
+
+local function _useDiag(id:number, level:number?, ...:string)
+    local diag = __diag[id]
+    if diag.State == true then
+        local fn = funclist[diag.Type]
+        if fn then
+            fn(`[Code '{id}']: {string.format(diag.Text, ...)}\n{level and `Traceback:\n{level}` or ''}`)
+        end
+    end
+end
 
 ---@class Connection
 ---@field Connected boolean
@@ -57,11 +73,11 @@ function Connection:Await(timeout:number): ...any?
     timeout = (type(timeout)=="number" and timeout) or 5
     local timeWaiting = tick()
     repeat
-        task.wait(0)
+        task.wait()
     until self.__args ~= nil or tick()-timeWaiting>=timeout
 
     if tick()-timeWaiting>=timeout then
-        Javelin._useDiag(3, 3, self.name)
+        _useDiag(3, 3, self.name)
     else
         local args = self.__args
         self.__args = nil
@@ -77,13 +93,14 @@ local function new(tab:{[string]:{any}}, evname:string, props:{[string]:{any}})
     if not props.fn then
         props.fn = function()
         end
-        Javelin._useDiag(2, 4, evname)
+        _useDiag(2, 4, evname)
     end
 
     local Conn = Connection.new(tab,evname,props)
     table.insert(tab.__events[evname], Conn)
     return Conn
 end
+
 
 --[=[
     Binds a function to an event, if the event does not exist it will create it.
@@ -132,7 +149,7 @@ function Javelin:OnceSync(event:string, fn:(...any)->()):JavelinConnection
 end
 --- Returns the number of connections binded to `event`.
 ---@return number
-function Javelin:Count(event:string):number
+function Javelin:Count(event:string):number?
     local Event = self.__events[event]
     if Event then
         return #Event
@@ -143,10 +160,23 @@ end
 function Javelin:Emit(name:string, ...:any?)
     local Event = self.__events[name]
     if not Event then
-        Javelin._useDiag(1, 3, name)
+        _useDiag(1, 3, name)
         return
     end
 
+    local function safeExec(fn:(...any)->(...any), ...)
+        local results = {
+            pcall(fn, ...)
+        }
+
+        if results[1] == false then
+            _useDiag(4, nil, name, results[2])
+        else
+            return unpack(results, 2)
+        end
+    end
+
+    local toSync = {}
     for _, conn:JavelinConnection in ipairs(Event) do
         local Fn = conn.fn
         if conn.once then
@@ -155,10 +185,14 @@ function Javelin:Emit(name:string, ...:any?)
 
         conn.__args = {...}
         if conn.sync then
-            Fn(...)
+            table.insert(toSync, Fn)
         else
-            task.spawn(Fn, ...)
+            task.spawn(safeExec, Fn, ...)
         end
+    end
+
+    for _, fn in ipairs(toSync) do
+        safeExec(fn, ...)
     end
 end
 
@@ -217,27 +251,14 @@ end
 ---@param mode boolean
 function Javelin.diagnostic(diagId:number|"*", mode:boolean)
     if diagId == "*" then
-        for k in ipairs(Javelin.__diag) do
+        for k in ipairs(__diag) do
             Javelin.diagnostic(k,mode)
         end
     else
-        local diag = Javelin.__diag[diagId]
+        local diag = __diag[diagId]
 
         if diag ~= nil then
             diag.State = mode
-        end
-    end
-end
-
---- 🔒 PRIVATE
----
---- Triggers diagnostic `id` if it is enabled.
-function Javelin._useDiag(id:number, level:number, ...:string)
-    local diag = Javelin.__diag[id]
-    if diag.State == true then
-        local fn = funclist[diag.Type]
-        if fn then
-            fn(`[Code '{id}']: {string.format(diag.Text, ...)}\nTraceback:\n{debug.info(level,"s")}:{debug.info(level, "l")}:`)
         end
     end
 end
