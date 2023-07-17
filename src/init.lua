@@ -35,7 +35,7 @@ local function _useDiag(id:number, level:number?, ...:string)
     if diag.State == true then
         local fn = funclist[diag.Type]
         if fn then
-            fn(`[Code '{id}']: {string.format(diag.Text, ...)}\n{level and `Traceback:\n{level}` or ''}`)
+            fn(`[Code '{id}']: {string.format(diag.Text, ...)}\n{level and `Traceback:\n{debug.info(level,"s")}:{debug.info(level, "l")}:` or ''}`)
         end
     end
 end
