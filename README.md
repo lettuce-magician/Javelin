@@ -1,7 +1,7 @@
 <div align="center">
 	<h1>Javelin</h1>
 	<p>An unique event library for Roblox.</p>
-    <img src="https://img.shields.io/badge/version-v1.0.1-green">
+    <a href="https://github.com/lettuce-magician/Javelin/tree/main/CHANGELOG.md"><img src="https://img.shields.io/badge/version-v1.0.1-green"></a>
     <img src="https://img.shields.io/badge/docs-WIP-red">
     <a href="https://opensource.org/license/mit/"><img src="https://img.shields.io/github/license/lettuce-magician/Javelin"></a>
     <a href="https://roblox.com"><img src="https://img.shields.io/badge/Made%20for-Roblox-white?logo=roblox"></a>
