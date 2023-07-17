@@ -222,8 +222,10 @@ function Javelin:Clear(event:string)
     self.__events[event] = nil
 
     -- Disconnect any RBXScriptSignalConnection that still exist then dereference them.
-    self.__RBXScriptSignalConnections[event]:Disconnect()
-    self.__RBXScriptSignalConnections[event] = nil
+    if self.__RBXScriptSignalConnections[event] then
+        self.__RBXScriptSignalConnections[event]:Disconnect()
+        self.__RBXScriptSignalConnections[event] = nil
+    end
 end
 
 --- Clears all events from the class.
