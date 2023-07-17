@@ -73,7 +73,7 @@ Javelin is general purpose, meaning it can be used in anything, but there's a fe
 
 ## How I can contribute to Javelin?
 
-If you find a bug, create a Issue a Pull Request for it, I will respond to it fast as possible.
+If you find a bug, create an Issue or a Pull Request for it, I will respond to it fast as possible.
 
 I'm on the process of creating documentation, any suggestions/contribuitions please deliver me a DM on Discord: `letiul`.
 
