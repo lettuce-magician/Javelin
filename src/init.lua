@@ -197,6 +197,15 @@ function Javelin:Emit(name:string, ...:any?)
 end
 
 --[=[
+    A wrapper to emit a RBXScriptSignal (Roblox Instance events) via Javelin.
+]=]
+function Javelin:Wrap(event:string, RBXScriptSignal: RBXScriptSignal)
+    self.__RBXScriptSignalConnections[event] = RBXScriptSignal:Connect(function(...:any?)
+        self:Emit(event, ...)
+    end)
+end
+
+--[=[
     Syntatic sugar for the code below:
     ```lua
     task.delay(time, function()
@@ -211,18 +220,31 @@ end
 --- Clears all connections for a specific event.
 function Javelin:Clear(event:string)
     self.__events[event] = nil
+
+    -- Disconnect any RBXScriptSignalConnection that still exist then dereference them.
+    if self.__RBXScriptSignalConnections[event] then
+        self.__RBXScriptSignalConnections[event]:Disconnect()
+        self.__RBXScriptSignalConnections[event] = nil
+    end
 end
 
 --- Clears all events from the class.
 function Javelin:ClearAll()
     table.clear(self.__events)
+
+    -- Disconnect any RBXScriptSignalConnection that still exist.
+    for event, connection in self.__RBXScriptSignalConnections do
+        connection:Disconnect()
+        self.__RBXScriptSignalConnections[event] = nil
+    end
 end
 
 --- Creates a new Javelin.
 ---@return Javelin
 function Javelin.new()
     return setmetatable({
-        __events = {}
+        __events = {},
+        __RBXScriptSignalConnections = {}
     }, Javelin)
 end
 
