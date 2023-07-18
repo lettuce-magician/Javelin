@@ -159,7 +159,7 @@ end
 --- Emits all connections binded to `name`, passing a variable number of arguments to them.
 function Javelin:Emit(name:string, ...:any?)
     local Event = self.__events[name]
-    if not Event then
+    if not Event or #Event == 0 then
         _useDiag(1, 3, name)
         return
     end
@@ -261,6 +261,7 @@ function Javelin.extend(Class:{[any]:any},Properties:{[any]:any})
     end
 
     Properties.__events = {}
+    Properties.__RBXScriptSignalConnections = {}
 
     return setmetatable(Properties, {__index = MTIndex})
 end

@@ -60,7 +60,7 @@ return function ()
     end)
 
     describe("Javelin:Emit", function()
-        it("should execute all non-sync events then the synced ones", function()
+        it("should execute all async events then the synced ones", function()
             local ranFirst = 0
             signal:On("emit", function()
                 ranFirst = 1
@@ -74,6 +74,52 @@ return function ()
 
             signal:Emit("emit")
             expect(ranFirst).to.be.equal(1)
+        end)
+    end)
+
+    describe("Javelin:Wrap", function()
+        it("should wrap a RBXScriptSignal.", function()
+            local part = Instance.new("Part")
+
+            local ran = false
+            signal:On("Destroying", function()
+                ran = true
+            end)
+            signal:Wrap("Destroying",part.Destroying)
+            part:Destroy()
+
+            expect(ran).to.be.equal(true)
+        end)
+    end)
+
+    describe("Javelin:Clear", function()
+        it("should clear all connections and wraps from a event", function()
+            local part = Instance.new("Part")
+
+            for _ = 1, 5 do
+                signal:On("emit")
+            end
+            signal:Wrap("emit", part.Destroying)
+            signal:Clear('emit')
+            part:Destroy()
+
+            expect(signal.__events["emit"]).to.be.equal(nil)
+            expect(signal.__RBXScriptSignalConnections["emit"]).to.be.equal(nil)
+        end)
+    end)
+
+    describe("Javelin:ClearAll", function()
+        it("should clear all events", function()
+            local part = Instance.new("Part")
+
+            for i = 1, 5 do
+                signal:On(tostring(i))
+                signal:Wrap(tostring(i), part.Destroying)
+            end
+            signal:ClearAll()
+
+            expect(#signal.__events).to.be.equal(0)
+            expect(#signal.__RBXScriptSignalConnections).to.be.equal(0)
         end)
     end)
 
